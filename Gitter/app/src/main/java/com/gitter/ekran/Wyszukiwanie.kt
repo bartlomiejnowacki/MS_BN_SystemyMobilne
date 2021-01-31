@@ -11,14 +11,19 @@ import com.gitter.onTextChanged
 import com.gitter.polaczenie.GithubApi
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.android.UI
+//import kotlinx.coroutines.android.Main
+//import kotlinx.coroutines.android.UI
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 class Wyszukiwanie : AppCompatActivity() {
 
-    private val adapter = Adapter()
+    private val adapter = Adapter({
+        repozytorium ->  val intent = SzczegolyRepo.getIntent(this, repozytorium.nazwa, repozytorium.url)
+        startActivity(intent)
+    })
     private val api: GithubApi
+    private var job: Job = Job()
 
     init {
         val retrofit =
@@ -35,39 +40,47 @@ class Wyszukiwanie : AppCompatActivity() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        job.cancel()
+    }
+
     fun przeszukajGithub(text: String) {
         progressBar.visibility = View.VISIBLE
 
-//        GlobalScope.launch() {
-//         try {
-//             val odpowiedz = api.szukaj(text).execute().body()
-//
-//             runBlocking (Dispatchers.Main) {
-//                 progressBar.visibility = View.INVISIBLE
-//                 val listaRepozytoriow = odpowiedz?.listaRepozytoriow
-//                 listaRepozytoriow?.let {
-//                     adapter.setRepozytoria(listaRepozytoriow)
-//                 }
-//             }
-//         } catch (e: Throwable) {
-//             e.printStackTrace()
-//         }
-//        }
-        launch(CommonPool) {
-            try {
-                val odpowiedz = api.szukaj(text).execute().body()
+        job.cancel()
+        job = GlobalScope.launch(Dispatchers.Default) {
+         try {
+             val odpowiedz = api.szukaj(text).execute().body()
 
-                run(UI) {
-                    progressBar.visibility = View.INVISIBLE
-                    val listaRepozytoriow = odpowiedz?.listaRepozytoriow
-                    listaRepozytoriow?.let {
-                        adapter.setRepozytoria(listaRepozytoriow)
-                    }
-                }
-            } catch (e: Throwable) {
-                e.printStackTrace()
-            }
+             kotlinx.coroutines.runBlocking(Dispatchers.Main) {
+                 progressBar.visibility = View.INVISIBLE
+                 val listaRepozytoriow = odpowiedz?.listaRepozytoriow
+                 listaRepozytoriow?.let {
+                     println("weszlo")
+                     adapter.setRepozytoria(listaRepozytoriow)
+                 }
+             }
+         } catch (e: Throwable) {
+             e.printStackTrace()
+         }
         }
+//        job.cancel()
+//        job = launch(CommonPool) {
+//            try {
+//                val odpowiedz = api.szukaj(text).execute().body()
+//
+//                run(UI) {
+//                    progressBar.visibility = View.INVISIBLE
+//                    val listaRepozytoriow = odpowiedz?.listaRepozytoriow
+//                    listaRepozytoriow?.let {
+//                        adapter.setRepozytoria(listaRepozytoriow)
+//                    }
+//                }
+//            } catch (e: Throwable) {
+//                e.printStackTrace()
+//            }
+//        }
     }
 
     //dodaje menu do głównego okna aplikacji

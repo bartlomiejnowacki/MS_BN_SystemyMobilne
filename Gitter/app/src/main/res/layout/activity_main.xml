@@ -23,7 +23,7 @@
                 android:textColorHint="@color/white"
                 android:ems="10"
                 android:hint="Enter text"
-                android:inputType="text"/>
+                android:inputType="textNoSuggestions"/>
         </androidx.appcompat.widget.Toolbar>
 
     </com.google.android.material.appbar.AppBarLayout>

@@ -8,16 +8,20 @@ import com.gitter.R
 import com.gitter.data.Repozytorium
 import kotlinx.android.synthetic.main.item_list.view.*
 
-class Adapter: RecyclerView.Adapter<Adapter.ViewHolder>(){
+class Adapter(private val callback: (Repozytorium) -> Unit): RecyclerView.Adapter<Adapter.ViewHolder>(){
 
     //lista objektów repozytoriów
     private val listaRepozytoriow = ArrayList<Repozytorium>()
 
     //funkcja do odswiezania listy repozytoriów "fillData"
     fun setRepozytoria(list: Collection<Repozytorium>){
+        for(item: Repozytorium in list)
+//        {
+//            println(item.nazwa)
+//        }
         listaRepozytoriow.clear()
         listaRepozytoriow.addAll(list)
-        notifyDataSetChanged() //odswieża widok i wyświetla nowe dane
+        this.notifyDataSetChanged() //odswieża widok i wyświetla nowe dane
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -36,6 +40,9 @@ class Adapter: RecyclerView.Adapter<Adapter.ViewHolder>(){
         holder?.itemView?.opis.text = repozytorium.opis
         holder?.itemView?.gwiazdki.text = repozytorium.gwiazdki.toString() + " stars"
 
+        holder?.itemView?.setOnClickListener {
+            callback.invoke(repozytorium)
+        }
     }
 
     //przekazujemy item_list.xml jako parametr View
